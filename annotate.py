@@ -16,13 +16,7 @@ def process_dir(path):
             with closing(mmap(f.fileno(), 0, access=ACCESS_READ)) as smali:
                 if re.search(br'\.(?:param|local) ', smali):
                     raise RuntimeError('Parameters are already annotated')
-                param_inserts = []
-                for method in METHOD_RE.finditer(smali):
-                    is_static = b'static' in method.group(1)
-                    print('[-] |- Method:', method.group(2))
-                    params = PARAM_RE.findall(method.group(3))
-                    if params:
-                        param_inserts.append((method.end(), params, is_static))
+                param_inserts = list(find_methods(smali))
                 if not param_inserts:
                     continue
                 entry.rename(original_path + '~')
@@ -36,6 +30,14 @@ def process_dir(path):
                         last_pos = offset
                     output.write(smali[last_pos:])
         print('[+] Closed', original_path)
+
+def find_methods(smali):
+    for method in METHOD_RE.finditer(smali):
+        is_static = b'static' in method.group(1)
+        print('[-] |- Method:', method.group(2))
+        params = PARAM_RE.findall(method.group(3))
+        if params:
+            yield method.end(), params, is_static
 
 if __name__ == '__main__':
     from sys import argv
