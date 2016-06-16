@@ -10,7 +10,7 @@ PARAM_RE = re.compile(br'\[*(?:L.+?;|[^L])')
 
 def process_dir(path):
     for entry in Path(path).rglob('*.smali'):
-        original_path = entry.path
+        original_path = str(entry)
         print('[-] File name:', original_path)
         with entry.open() as f:
             with closing(mmap(f.fileno(), 0, access=ACCESS_READ)) as smali:
