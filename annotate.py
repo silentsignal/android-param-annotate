@@ -24,9 +24,12 @@ def process_dir(path):
                 with open(original_path, 'wb') as output:
                     for offset, params, is_static in param_inserts:
                         output.write(smali[last_pos:offset])
+                        wide_offset = 0
                         for n, t in enumerate(params, 0 if is_static else 1):
-                            output.write('\n    .param p{0}, "p{0}"    # {1}'.format(n,
+                            output.write('\n    .param p{0}, "p{0}"    # {1}'.format(n + wide_offset,
                                 t.decode('ascii')).encode('ascii'))
+                            if t == b'J' or t == b'D':
+                                wide_offset += 1
                         last_pos = offset
                     output.write(smali[last_pos:])
         print('[+] Closed', original_path)
